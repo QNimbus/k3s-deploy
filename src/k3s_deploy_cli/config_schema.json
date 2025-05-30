@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "K3s Deploy CLI Configuration",
+  "description": "Configuration file for the K3s Deployment CLI for Proxmox VE.",
+  "type": "object",
+  "properties": {
+    "proxmox": {
+      "description": "Proxmox VE connection details.",
+      "type": "object",
+      "properties": {
+        "host": {
+          "description": "Hostname or IP address of the Proxmox VE server.",
+          "type": "string"
+        },
+        "user": {
+          "description": "Username for Proxmox VE authentication (e.g., root@pam or user@pve).",
+          "type": "string"
+        },
+        "password": {
+          "description": "Password for Proxmox VE authentication. Optional if API token is used.",
+          "type": "string"
+        },
+        "api_token_id": {
+          "description": "API Token ID for Proxmox VE authentication (e.g., user@pam!mytoken). Optional if password is used.",
+          "type": "string"
+        },
+        "api_token_secret": {
+          "description": "API Token Secret for Proxmox VE authentication. Optional if password is used.",
+          "type": "string"
+        },
+        "verify_ssl": {
+          "description": "Verify SSL certificate of the Proxmox VE host.",
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": [
+        "host",
+        "user"
+      ],
+      "oneOf": [
+        { "required": ["password"] },
+        { "required": ["api_token_id", "api_token_secret"] }
+      ]
+    },
+    "nodes": {
+      "description": "List of K3s nodes to be managed on Proxmox VE.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "vmid": {
+            "description": "The Proxmox VE Virtual Machine ID.",
+            "type": "integer"
+          },
+          "role": {
+            "description": "Role of the K3s node.",
+            "type": "string",
+            "enum": ["server", "agent", "storage"]
+          },
+          "ip_config": {
+            "description": "Network configuration for the node.",
+            "type": "object",
+            "properties": {
+              "address": {
+                "description": "Static IP address in CIDR notation (e.g., 192.168.1.100/24).",
+                "type": "string",
+                "pattern": "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]+$"
+              },
+              "gateway": {
+                "description": "Gateway IP address (e.g., 192.168.1.1).",
+                "type": "string",
+                "pattern": "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
+              }
+            },
+            "required": [
+              "address",
+              "gateway"
+            ]
+          }
+        },
+        "required": [
+          "vmid",
+          "role"
+        ]
+      }
+    }
+  },
+  "required": [
+    "proxmox"
+  ]
+}

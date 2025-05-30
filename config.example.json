@@ -1,0 +1,9 @@
+{
+  "proxmox": {
+    "host": "ENV:PROXMOX_HOST",
+    "user": "ENV:PROXMOX_USER",
+    "password": "ENV:PROXMOX_PASSWORD",
+    "verify_ssl": true,
+    "timeout": 10
+  }
+}

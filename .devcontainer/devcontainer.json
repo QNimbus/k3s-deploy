@@ -1,0 +1,70 @@
+{
+    "name": "Python 3 Development Container",
+    "image": "mcr.microsoft.com/devcontainers/python:latest",
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {
+            "version": "latest"
+        },
+        "ghcr.io/devcontainers-extra/features/poetry:2": {
+            "version": "latest"
+        }
+    },
+    "containerEnv": {
+        "WORKSPACE_FOLDER": "/workspaces/${localWorkspaceFolderBasename}"
+    },
+    "postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
+    "mounts": [
+        "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/.bash_aliases,target=/home/vscode/.bash_aliases,type=bind,consistency=cached"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-python.black-formatter",
+                "charliermarsh.ruff"
+            ],
+            "settings": {
+                "chat.mcp.enabled": true,
+                "github.copilot.enable": {
+                    "*": true,
+                    "plaintext": false,
+                    "markdown": false,
+                    "scminput": false
+                },
+                "json.schemas": [
+                    {
+                        "fileMatch": [
+                            "./config.json",
+                            "./config.example.json"
+                        ],
+                        "url": "./src/k3s_deploy_cli/config_schema.json"
+                    }
+                ],
+                "chat.instructionsFilesLocations": {
+                    ".github/instructions": true
+                },
+                "github.copilot.chat.codesearch.enabled": true,
+                "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.linting.enabled": true,
+                "python.formatting.provider": "none",
+                "[python]": {
+                    "editor.defaultFormatter": "charliermarsh.ruff",
+                    "editor.formatOnSave": false,
+                    "editor.formatOnType": false,
+                    "editor.formatOnPaste": false,
+                    "editor.formatOnSaveMode": "file",
+                    "editor.codeActionsOnSave": {
+                        "source.sort.json": "explicit",
+                        "source.organizeImports": "explicit"
+                    }
+                },
+                "files.eol": "\n"
+            }
+        }
+    },
+    "forwardPorts": [],
+    "remoteUser": "vscode"
+}
