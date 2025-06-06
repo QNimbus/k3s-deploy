@@ -1,0 +1,67 @@
+{
+  "proxmox": {
+    "host": "ENV:PROXMOX_HOST",
+    "user": "ENV:PROXMOX_USER",
+    "password": "ENV:PROXMOX_PASSWORD",
+    "verify_ssl": true,
+    "timeout": 10
+  },
+  "cloud_init": {
+    "package_reboot_if_required": true,
+    "package_update": true,
+    "package_upgrade": true,
+    "packages": [
+      "qemu-guest-agent"
+    ],
+    "runcmd": [
+      "systemctl enable qemu-guest-agent",
+      "systemctl start qemu-guest-agent"
+    ],
+    "users": [
+      {
+        "username": "k3sadmin",
+        "plain_text_passwd": "k3sadmin",
+        "shell": "/bin/bash",
+        "gecos": "K3S Admin User",
+        "lock_passwd": false,
+        "sudo": "ALL=(ALL) NOPASSWD:ALL"
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "vmid": 1211,
+      "role": "server",
+      "cloud_init": {
+        "package_reboot_if_required": true,
+        "package_update": true,
+        "package_upgrade": true,
+        "packages": [
+          "qemu-guest-agent"
+        ],
+        "runcmd": [
+          "systemctl enable qemu-guest-agent",
+          "systemctl start qemu-guest-agent"
+        ],
+        "users": [
+          {
+            "username": "ubuntu",
+            "plain_text_passwd": "ubuntu",
+            "shell": "/bin/bash",
+            "gecos": "Ubuntu User",
+            "lock_passwd": false,
+            "sudo": "ALL=(ALL) NOPASSWD:ALL"
+          }
+        ]
+      }
+    },
+    {
+      "vmid": 1221,
+      "role": "agent"
+    },
+    {
+      "vmid": 1231,
+      "role": "storage"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        
+
+        {
+            "name": "Debug k3s-deploy CLI (Poetry)",
+            "type": "python",
+            "request": "launch",
+            "module": "k3s_deploy_cli",
+            "args": ["${input:commandArgs}"],
+            "python": "${command:python.interpreterPath}",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Debug k3s-deploy with --help (Poetry)",
+            "type": "python",
+            "request": "launch",
+            "module": "k3s_deploy_cli",
+            "args": ["--help"],
+            "python": "${command:python.interpreterPath}",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Debug k3s-deploy provision 1211 (Poetry)",
+            "type": "python",
+            "request": "launch",
+            "module": "k3s_deploy_cli",
+            "args": ["provision", "1211", "--debug"],
+            "python": "${command:python.interpreterPath}",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Debug k3s-deploy info (Poetry)",
+            "type": "python",
+            "request": "launch",
+            "module": "k3s_deploy_cli",
+            "args": ["info", "--verbose"],
+            "python": "${command:python.interpreterPath}",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Debug Current Test File (Poetry)",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": ["${file}", "-v"],
+            "python": "${command:python.interpreterPath}",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Debug All Tests (Poetry)",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": ["tests/", "-v"],
+            "python": "${command:python.interpreterPath}",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
+    ],
+    "inputs": [
+        {
+            "id": "commandArgs",
+            "description": "Enter command line arguments for k3s-deploy CLI",
+            "default": "--help",
+            "type": "promptString"
+        }
+    ]
+}

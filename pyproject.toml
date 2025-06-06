@@ -1,0 +1,36 @@
+[project]
+name = "k3s-deploy"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "B. van Wetten",email = "git@bvw.email"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.13,<4.0"
+dependencies = [
+    "requests (>=2.32.3,<3.0.0)",
+    "proxmoxer (>=2.2.0,<3.0.0)",
+    "rich (>=14.0.0,<15.0.0)",
+    "paramiko (>=3.5.1,<4.0.0)",
+    "loguru (>=0.7.3,<0.8.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)",
+    "jsonschema (>=4.24.0,<5.0.0)",
+    "urllib3 (>=2.4.0,<3.0.0)",
+    "pyyaml (>=6.0.2,<7.0.0)",
+    "passlib (>=1.7.4,<2.0.0)"
+]
+
+[project.scripts]
+k3s-deploy = "k3s_deploy_cli.main:main"
+
+[tool.poetry]
+packages = [{include = "k3s_deploy_cli", from = "src"}]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+pytest-cov = "^6.1.1"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

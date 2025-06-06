@@ -1,0 +1,901 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "K3s Deploy CLI Configuration",
+  "description": "Configuration file for the K3s Deployment CLI for Proxmox VE.",
+  "type": "object",
+  "$defs": {
+    "user": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "description": "Username to create on the VM.",
+          "type": "string"
+        },
+        "ssh_keys": {
+          "description": "List of SSH public keys for the user.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sudo": {
+          "description": "Sudo privileges string (e.g., 'ALL=(ALL) NOPASSWD:ALL').",
+          "type": "string",
+          "default": "ALL=(ALL) NOPASSWD:ALL"
+        },
+        "shell": {
+          "description": "Default shell for the user.",
+          "type": "string",
+          "default": "/bin/bash"
+        },
+        "hashed_passwd": {
+          "description": "Pre-hashed password (will overwrite existing password). Supports ENV: prefix for environment variables.",
+          "type": "string"
+        },
+        "plain_text_passwd": {
+          "description": "Plain text password (will be hashed by cloud-init, will overwrite existing password). Supports ENV: prefix for environment variables.",
+          "type": "string"
+        },
+        "lock_passwd": {
+          "description": "Whether to lock the password (disable password login).",
+          "type": "boolean",
+          "default": false
+        },
+        "gecos": {
+          "description": "User's GECOS (full name/description).",
+          "type": "string"
+        },
+        "primary_group": {
+          "description": "Primary group for the user.",
+          "type": "string"
+        },
+        "groups": {
+          "description": "Additional groups for the user.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "system": {
+          "description": "If true, create as a system user.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "username"
+      ],
+      "additionalProperties": false,
+      "not": {
+        "allOf": [
+          {
+            "required": [
+              "hashed_passwd"
+            ]
+          },
+          {
+            "required": [
+              "plain_text_passwd"
+            ]
+          }
+        ]
+      }
+    },
+    "cloud_init_common": {
+      "type": "object",
+      "description": "Common cloud-init properties shared between global and VM-specific configurations.",
+      "properties": {
+        "packages": {
+          "description": "List of packages to install via cloud-init.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "qemu-guest-agent"
+          ]
+        },
+        "package_update": {
+          "description": "Whether to update package cache during cloud-init.",
+          "type": "boolean",
+          "default": true
+        },
+        "package_upgrade": {
+          "description": "Whether to upgrade existing packages during cloud-init.",
+          "type": "boolean",
+          "default": false
+        },
+        "package_reboot_if_required": {
+          "description": "Whether to reboot if packages require it during cloud-init.",
+          "type": "boolean",
+          "default": true
+        },
+        "runcmd": {
+          "description": "List of commands to run during cloud-init.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "systemctl enable qemu-guest-agent",
+            "systemctl start qemu-guest-agent"
+          ]
+        },
+        "users": {
+          "description": "List of users to be created on the VM via cloud-init.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/user"
+          }
+        }
+      }
+    },
+    "global_cloud_init": {
+      "type": "object",
+      "description": "Global cloud-init configuration with limited network options.",
+      "properties": {
+        "packages": {
+          "description": "List of packages to install via cloud-init.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "qemu-guest-agent"
+          ]
+        },
+        "package_update": {
+          "description": "Whether to update package cache during cloud-init.",
+          "type": "boolean",
+          "default": true
+        },
+        "package_upgrade": {
+          "description": "Whether to upgrade existing packages during cloud-init.",
+          "type": "boolean",
+          "default": false
+        },
+        "package_reboot_if_required": {
+          "description": "Whether to reboot if packages require it during cloud-init.",
+          "type": "boolean",
+          "default": true
+        },
+        "runcmd": {
+          "description": "List of commands to run during cloud-init.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "systemctl enable qemu-guest-agent",
+            "systemctl start qemu-guest-agent"
+          ]
+        },
+        "users": {
+          "description": "List of users to be created on the VM via cloud-init.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/user"
+          }
+        },
+        "network": {
+          "description": "Global network configuration for cloud-init (network config v2 - global settings only).",
+          "$ref": "#/$defs/global_network_config_v2"
+        }
+      },
+      "additionalProperties": false
+    },
+    "vm_cloud_init": {
+      "type": "object",
+      "description": "VM-specific cloud-init configuration with full network options.",
+      "properties": {
+        "packages": {
+          "description": "List of packages to install via cloud-init.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "qemu-guest-agent"
+          ]
+        },
+        "package_update": {
+          "description": "Whether to update package cache during cloud-init.",
+          "type": "boolean",
+          "default": true
+        },
+        "package_upgrade": {
+          "description": "Whether to upgrade existing packages during cloud-init.",
+          "type": "boolean",
+          "default": false
+        },
+        "package_reboot_if_required": {
+          "description": "Whether to reboot if packages require it during cloud-init.",
+          "type": "boolean",
+          "default": true
+        },
+        "runcmd": {
+          "description": "List of commands to run during cloud-init.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "systemctl enable qemu-guest-agent",
+            "systemctl start qemu-guest-agent"
+          ]
+        },
+        "users": {
+          "description": "List of users to be created on the VM via cloud-init.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/user"
+          }
+        },
+        "network": {
+          "description": "VM-specific network configuration for cloud-init (network config v2 - full configuration).",
+          "$ref": "#/$defs/network_config_v2"
+        }
+      },
+      "additionalProperties": false
+    },
+    "k3s_role": {
+      "type": "string",
+      "description": "K3s role for the node.",
+      "enum": [
+        "server",
+        "agent",
+        "storage"
+      ]
+    },
+    "network_device_match": {
+      "type": "object",
+      "description": "Device matching criteria for network interfaces.",
+      "properties": {
+        "name": {
+          "description": "Interface name (supports globs with networkd).",
+          "type": "string"
+        },
+        "macaddress": {
+          "description": "MAC address in format xx:xx:xx:xx:xx:xx.",
+          "type": "string",
+          "pattern": "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+        },
+        "driver": {
+          "description": "Kernel driver name (supports globs, networkd only).",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "network_dhcp_overrides": {
+      "type": "object",
+      "description": "DHCP override options.",
+      "properties": {
+        "hostname": {
+          "description": "DHCP hostname.",
+          "type": "string"
+        },
+        "route-metric": {
+          "description": "Route metric for DHCP routes.",
+          "type": "integer"
+        },
+        "send-hostname": {
+          "description": "Send hostname in DHCP request.",
+          "type": "boolean"
+        },
+        "use-dns": {
+          "description": "Use DNS servers from DHCP.",
+          "type": "boolean"
+        },
+        "use-domains": {
+          "description": "Use search domains from DHCP.",
+          "type": "boolean"
+        },
+        "use-hostname": {
+          "description": "Use hostname from DHCP.",
+          "type": "boolean"
+        },
+        "use-mtu": {
+          "description": "Use MTU from DHCP.",
+          "type": "boolean"
+        },
+        "use-ntp": {
+          "description": "Use NTP servers from DHCP.",
+          "type": "boolean"
+        },
+        "use-routes": {
+          "description": "Use routes from DHCP.",
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "network_nameservers": {
+      "type": "object",
+      "description": "DNS configuration.",
+      "properties": {
+        "addresses": {
+          "description": "DNS server IP addresses.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "ipv4"
+          }
+        },
+        "search": {
+          "description": "DNS search domains.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "network_route": {
+      "type": "object",
+      "description": "Network route configuration.",
+      "properties": {
+        "to": {
+          "description": "Destination network in CIDR notation.",
+          "type": "string"
+        },
+        "via": {
+          "description": "Gateway IP address.",
+          "type": "string",
+          "format": "ipv4"
+        },
+        "metric": {
+          "description": "Route metric (optional).",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "to",
+        "via"
+      ],
+      "additionalProperties": false
+    },
+    "network_common_properties": {
+      "type": "object",
+      "description": "Common properties for all network device types.",
+      "properties": {
+        "renderer": {
+          "description": "Backend renderer.",
+          "type": "string",
+          "enum": [
+            "networkd",
+            "NetworkManager"
+          ]
+        },
+        "match": {
+          "$ref": "#/$defs/network_device_match"
+        },
+        "dhcp4": {
+          "description": "Enable DHCP for IPv4.",
+          "type": "boolean",
+          "default": false
+        },
+        "dhcp6": {
+          "description": "Enable DHCP for IPv6.",
+          "type": "boolean",
+          "default": false
+        },
+        "addresses": {
+          "description": "Static IP addresses in CIDR notation.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]+$"
+          }
+        },
+        "gateway4": {
+          "description": "IPv4 default gateway (deprecated, use routes instead).",
+          "type": "string",
+          "format": "ipv4"
+        },
+        "gateway6": {
+          "description": "IPv6 default gateway (deprecated, use routes instead).",
+          "type": "string",
+          "format": "ipv6"
+        },
+        "mtu": {
+          "description": "Maximum Transmission Unit in bytes.",
+          "type": "integer",
+          "minimum": 68,
+          "maximum": 65536
+        },
+        "optional": {
+          "description": "Don't wait for interface during boot (networkd only).",
+          "type": "boolean",
+          "default": false
+        },
+        "dhcp4-overrides": {
+          "$ref": "#/$defs/network_dhcp_overrides"
+        },
+        "dhcp6-overrides": {
+          "$ref": "#/$defs/network_dhcp_overrides"
+        },
+        "nameservers": {
+          "$ref": "#/$defs/network_nameservers"
+        },
+        "routes": {
+          "description": "Static routes configuration.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/network_route"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "network_physical_properties": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/network_common_properties"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "match": {
+              "$ref": "#/$defs/network_device_match"
+            },
+            "set-name": {
+              "description": "Rename interface (requires macaddress in match).",
+              "type": "string"
+            },
+            "wakeonlan": {
+              "description": "Enable wake on LAN.",
+              "type": "boolean",
+              "default": false
+            }
+          }
+        }
+      ]
+    },
+    "network_bond_parameters": {
+      "type": "object",
+      "description": "Bonding parameters.",
+      "properties": {
+        "mode": {
+          "description": "Bonding mode.",
+          "type": "string",
+          "enum": [
+            "balance-rr",
+            "active-backup",
+            "balance-xor",
+            "broadcast",
+            "802.3ad",
+            "balance-tlb",
+            "balance-alb"
+          ]
+        },
+        "lacp-rate": {
+          "description": "LACP rate.",
+          "type": "string",
+          "enum": [
+            "slow",
+            "fast"
+          ],
+          "default": "slow"
+        },
+        "mii-monitor-interval": {
+          "description": "MII monitoring interval.",
+          "type": "integer",
+          "default": 0
+        },
+        "min-links": {
+          "description": "Minimum links up for bond to be up.",
+          "type": "integer"
+        },
+        "transmit-hash-policy": {
+          "description": "Hash policy for load balancing.",
+          "type": "string",
+          "enum": [
+            "layer2",
+            "layer3+4",
+            "layer2+3",
+            "encap2+3",
+            "encap3+4"
+          ]
+        },
+        "ad-select": {
+          "description": "Aggregation selection logic.",
+          "type": "string",
+          "enum": [
+            "stable",
+            "bandwidth",
+            "count"
+          ]
+        },
+        "all-slaves-active": {
+          "description": "Handle duplicate frames.",
+          "type": "boolean",
+          "default": false
+        },
+        "arp-interval": {
+          "description": "ARP monitoring interval.",
+          "type": "integer",
+          "default": 0
+        },
+        "arp-ip-targets": {
+          "description": "ARP target IP addresses.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "ipv4"
+          }
+        },
+        "arp-validate": {
+          "description": "ARP validation mode.",
+          "type": "string",
+          "enum": [
+            "none",
+            "active",
+            "backup",
+            "all"
+          ]
+        },
+        "arp-all-targets": {
+          "description": "ARP target policy.",
+          "type": "string",
+          "enum": [
+            "any",
+            "all"
+          ]
+        },
+        "up-delay": {
+          "description": "Link enable delay.",
+          "type": "integer",
+          "default": 0
+        },
+        "down-delay": {
+          "description": "Link disable delay.",
+          "type": "integer",
+          "default": 0
+        },
+        "fail-over-mac-policy": {
+          "description": "MAC address policy during failover.",
+          "type": "string",
+          "enum": [
+            "none",
+            "active",
+            "follow"
+          ]
+        },
+        "gratuitous-arp": {
+          "description": "Number of gratuitous ARP packets.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 255,
+          "default": 1
+        },
+        "packets-per-slave": {
+          "description": "Packets per slave in balance-rr mode.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535,
+          "default": 1
+        },
+        "primary-reselect-policy": {
+          "description": "Primary reselection policy.",
+          "type": "string",
+          "enum": [
+            "always",
+            "better",
+            "failure"
+          ]
+        },
+        "learn-packet-interval": {
+          "description": "Learning packet interval.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647,
+          "default": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "network_bridge_parameters": {
+      "type": "object",
+      "description": "Bridge parameters.",
+      "properties": {
+        "ageing-time": {
+          "description": "MAC address aging time.",
+          "type": "integer"
+        },
+        "priority": {
+          "description": "Bridge priority (0-65535, lower = higher priority).",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "forward-delay": {
+          "description": "Forwarding delay time.",
+          "type": "integer"
+        },
+        "hello-time": {
+          "description": "Hello packet interval.",
+          "type": "integer"
+        },
+        "max-age": {
+          "description": "Maximum age of hello packets.",
+          "type": "integer"
+        },
+        "path-cost": {
+          "description": "Path cost for the bridge.",
+          "type": "integer"
+        },
+        "stp": {
+          "description": "Enable Spanning Tree Protocol.",
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "network_ethernet": {
+      "$ref": "#/$defs/network_physical_properties"
+    },
+    "network_bond": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/network_common_properties"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "interfaces": {
+              "description": "List of interface IDs to bond.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "parameters": {
+              "$ref": "#/$defs/network_bond_parameters"
+            }
+          },
+          "required": [
+            "interfaces"
+          ]
+        }
+      ]
+    },
+    "network_bridge": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/network_common_properties"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "interfaces": {
+              "description": "List of interface IDs to bridge.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "parameters": {
+              "$ref": "#/$defs/network_bridge_parameters"
+            }
+          },
+          "required": [
+            "interfaces"
+          ]
+        }
+      ]
+    },
+    "network_vlan": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/network_common_properties"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "VLAN ID (0-4094).",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4094
+            },
+            "link": {
+              "description": "ID of underlying device.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "link"
+          ]
+        }
+      ]
+    },
+    "global_network_config_v2": {
+      "type": "object",
+      "description": "Global cloud-init network configuration v2 (for settings that apply across all VMs).",
+      "properties": {
+        "version": {
+          "description": "Network configuration version.",
+          "type": "integer",
+          "const": 2,
+          "default": 2
+        },
+        "renderer": {
+          "description": "Global network renderer.",
+          "type": "string",
+          "enum": [
+            "networkd",
+            "NetworkManager"
+          ]
+        },
+        "dhcp4-overrides": {
+          "description": "Global DHCP4 override defaults.",
+          "$ref": "#/$defs/network_dhcp_overrides"
+        },
+        "dhcp6-overrides": {
+          "description": "Global DHCP6 override defaults.",
+          "$ref": "#/$defs/network_dhcp_overrides"
+        }
+      },
+      "required": [
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "network_config_v2": {
+      "type": "object",
+      "description": "Cloud-init network configuration v2 (full configuration for VM-specific use).",
+      "properties": {
+        "version": {
+          "description": "Network configuration version.",
+          "type": "integer",
+          "const": 2,
+          "default": 2
+        },
+        "renderer": {
+          "description": "Global network renderer.",
+          "type": "string",
+          "enum": [
+            "networkd",
+            "NetworkManager"
+          ]
+        },
+        "ethernets": {
+          "description": "Ethernet interface configurations.",
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z0-9_-]+$": {
+              "$ref": "#/$defs/network_ethernet"
+            }
+          },
+          "additionalProperties": false
+        },
+        "bonds": {
+          "description": "Bond interface configurations.",
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z0-9_-]+$": {
+              "$ref": "#/$defs/network_bond"
+            }
+          },
+          "additionalProperties": false
+        },
+        "bridges": {
+          "description": "Bridge interface configurations.",
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z0-9_-]+$": {
+              "$ref": "#/$defs/network_bridge"
+            }
+          },
+          "additionalProperties": false
+        },
+        "vlans": {
+          "description": "VLAN interface configurations.",
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z0-9_-]+$": {
+              "$ref": "#/$defs/network_vlan"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "version"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "cloud_init": {
+      "description": "Global cloud-init configuration applied to all VMs (can be overridden per VM).",
+      "$ref": "#/$defs/global_cloud_init"
+    },
+    "proxmox": {
+      "description": "Proxmox VE connection details.",
+      "type": "object",
+      "properties": {
+        "host": {
+          "description": "Hostname or IP address of the Proxmox VE server.",
+          "type": "string"
+        },
+        "user": {
+          "description": "Username for Proxmox VE authentication (e.g., root@pam or user@pve).",
+          "type": "string"
+        },
+        "password": {
+          "description": "Password for Proxmox VE authentication. Optional if API token is used.",
+          "type": "string"
+        },
+        "api_token_id": {
+          "description": "API Token ID for Proxmox VE authentication (e.g., user@pam!mytoken). Optional if password is used.",
+          "type": "string"
+        },
+        "api_token_secret": {
+          "description": "API Token Secret for Proxmox VE authentication. Optional if password is used.",
+          "type": "string"
+        },
+        "verify_ssl": {
+          "description": "Verify SSL certificate of the Proxmox VE host.",
+          "type": "boolean",
+          "default": true
+        },
+        "ssh_key_file": {
+          "description": "Path to SSH private key file for Proxmox host access. Optional if ssh_key is provided or if relying on ssh-agent.",
+          "type": "string"
+        },
+        "ssh_key": {
+          "description": "SSH private key content for Proxmox host access. Optional if ssh_key_file is provided or if relying on ssh-agent.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "host",
+        "user"
+      ],
+      "oneOf": [
+        {
+          "required": [
+            "password"
+          ]
+        },
+        {
+          "required": [
+            "api_token_id",
+            "api_token_secret"
+          ]
+        }
+      ]
+    },
+    "nodes": {
+      "description": "List of K3s nodes to manage.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "vmid": {
+            "description": "Proxmox VM ID.",
+            "type": "integer"
+          },
+          "role": {
+            "$ref": "#/$defs/k3s_role"
+          },
+          "cloud_init": {
+            "description": "VM-specific cloud-init configuration (overrides global cloud_init settings).",
+            "$ref": "#/$defs/vm_cloud_init"
+          }
+        },
+        "required": [
+          "vmid",
+          "role"
+        ]
+      }
+    }
+  },
+  "required": [
+    "proxmox"
+  ]
+}
